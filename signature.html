@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signature Site</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .canvas-container {
+            border: 1px solid black;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .controller {
+            margin-top: 10px;
+        }
+
+        button {
+            margin-right: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="canvas-container">
+        <canvas id="single-canvas" width="800" height="600"></canvas>
+    </div>
+    <div class="controller">
+        <button id="change-bg">Background</button>
+        <button id="erase">Erase</button>
+        <button id="downlod-btn">Download</button>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
+    <script>
+        const canvas = document.querySelector('#single-canvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+
+        canvas.addEventListener('mousedown', (e) => {
+            drawing = true;
+            draw(e);
+        })
+        canvas.addEventListener('mouseup', () => {
+            drawing = false;
+            ctx.beginPath();
+        });
+        canvas.addEventListener('mousemove', draw);
+        function draw(event) {
+            if (!drawing) return;
+            ctx.lineWidth = 2;
+            ctx.linCap = 'round';
+            ctx.strokeStyle = 'red';
+
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(event.clientX - rect.left, event.clientY - rect.top);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(event.clientX - rect.left, event.clientY - rect.top);
+        }
+        const colors = ['#ffffff', '#f0f0f0', '#d3d3d3', '#c0c0c0','green'];
+        let colorIndex = 0;
+        document.getElementById('change-bg').addEventListener('click', () => {
+            colorIndex = (colorIndex + 1) % colors.length;
+            canvas.style.backgroundColor = colors[colorIndex];
+
+        });
+        document.getElementById('erase').addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            canvas.style.backgroundColor = colors[colorIndex];
+        });
+
+        document.getElementById('downlod-btn').addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width / 4, canvas.height / 4);
+            pdf.save('signature.pdf');
+
+        });
+
+
+    </script>
+
+</body>
+
+</html>
